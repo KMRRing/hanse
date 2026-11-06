@@ -592,7 +592,7 @@ function openMenu() {
   const play = part(body, "play");
   if (page.host) play.append(action("New game", newGame, "primary"));
   page.menu(play);
-  play.append(action("The rules on one page", showRules, "link"));
+  play.append(action("The Rules", showRules, "link"));
   const set = part(body, "settings");
   const keep = () => saveOpts();
   set.append(toggle("Sound", sound.on, on => { sound.on = on; keepOn({ setItem: (k, v) => localStorage.setItem(k, v) }, on); }));
