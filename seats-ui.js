@@ -1,8 +1,7 @@
 // A seat game's page round its runner (seats.js): solo on this device, the game kept as <id>:game as it changes, the
-// computer players in the other seats; Invite players starts a party with this game picked (party.html: its room, its
-// QR code, the friends' names), and the party's host brings everyone here, to a table in the party's room where each
-// takes a computer player's seat; a table in the address (?table=CODE) sits down at it; the narrator speaks each line
-// on the phone that runs the table. The page draws each view and makes its moves through move().
+// computer players in the other seats; Invite players opens a table (its code in the address, a sheet with the link and
+// its QR code), where each guest takes a computer player's seat; a table in the address (?table=CODE) sits down at it;
+// the narrator speaks each line on the phone that runs the table. The page draws each view and makes its moves through move().
 import { localTable, createRunner } from "./seats.js";
 import { openTable, inviteSheet, createNarrator, tableInAddress, savedName } from "./table-ui.js";
 import { IN_FRAME } from "./suite.js";
@@ -57,10 +56,19 @@ export function seatPage({ rules, id, app = 1, pace = 900, botName, level = () =
   onPause(() => {}, () => runner.kick());
 
   // playing with others starts a party, with this game picked (the one way in: its room, its QR code, its names)
-  function inviteNow() {
-    if (remote.code && !party) { invite.open(); return; }
+  // This game stands alone (no games screen or Party here), so Invite players opens a table of its own: the code goes in
+  // the address, the sheet shows the link and its QR code, and each guest who opens it takes a computer player's seat
+  // (up to the game's own most). This phone deals the first game at the table.
+  async function inviteNow() {
+    if (remote.code) { invite.open(); return; }
     if (IN_FRAME) return;
-    location.href = `party.html?game=${id}&invite=1`;
+    const code = await remote.start();
+    if (!code) return;
+    narrator = createNarrator({ game: id });
+    dealFirst = true;
+    runner.use(remote);
+    firstDeal();
+    invite.open();
   }
 
   // a table in the address: sit down there (a guest from the QR code, a party's phones, or anyone after a reload); a
